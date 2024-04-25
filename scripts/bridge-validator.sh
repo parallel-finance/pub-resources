@@ -40,11 +40,39 @@ function create_keystore() {
     docker run --rm -it -v "$BASE_KEYSTORE_DIR:/app/keystore" -e "CI=true" $ORG/$IMAGE_NAME pnpm create-keystore
 }
 
+function start_oracle() {
+    docker run --rm -it --name $SERVICE_NAME -v "$BASE_KEYSTORE_DIR:/app/keystore" --detach-keys="ctrl-c" -e "CI=true" $ORG/$IMAGE_NAME pnpm prod-oracle
+}
+
+function start_verifier() {
+    docker run --rm -it --name $SERVICE_NAME -v "$BASE_KEYSTORE_DIR:/app/keystore" --detach-keys="ctrl-c" -e "CI=true" $ORG/$IMAGE_NAME pnpm prod-verifier
+}
+
+function start_oracle_and_verifier() {
+    docker run --rm -it --name $SERVICE_NAME -v "$BASE_KEYSTORE_DIR:/app/keystore" --detach-keys="ctrl-c" -e "CI=true" $ORG/$IMAGE_NAME pnpm prod
+}
+
 function start_service() {
     echo "Starting bridge dvn verifier service"
-    echo ":::::::::: Ctrl+C to exit the service and hang up the container"
+    echo "================================================================"
+    echo "Please enter the mode of the service (default: 0)"
+    echo "0. ⏩️ oracle mode (default ⛳️)"
+    echo "1. 🐤 vefivier mode (advanced)"
+    echo "2. 🤖 oracle & verifier mode (advanced)"
+    read -p "😆 Enter your option: " MODE
+    echo "================================================================"
+
+    case $MODE in
+    0) start_oracle ;;
+    1) start_verifier ;;
+    2) start_oracle_and_verifier ;;
+    7) exit ;;
+    *) echo "❌ Invalid option. Please try again(0-2)." ;;
+    esac
+    echo ":::::::::: 🙌 Ctrl+C 🙌 to exit the service and hang up the container"
+
     docker run --rm -it --name $SERVICE_NAME -v "$BASE_KEYSTORE_DIR:/app/keystore" --detach-keys="ctrl-c" -e "CI=true" $ORG/$IMAGE_NAME pnpm prod
-    echo "Bridge DVN Verifier service started successfully >#<"
+    echo "🌀 Parallel Bridge DVN Verifier service started successfully >#<"
 }
 
 function check_service_status() {
@@ -96,7 +124,7 @@ function show_menu() {
     5) stop_service ;;
     6) uninstall_dvn_verifier ;;
     7) exit ;;
-    *) echo "❌ Invalid option. Please try again(1-7)." ;;
+    *) echo "❌ Invalid option. Please try again(0-7)." ;;
     esac
 }
 
