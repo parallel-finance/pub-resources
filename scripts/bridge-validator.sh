@@ -4,10 +4,10 @@
 BASE_KEYSTORE_DIR=$HOME/.parallel_bridge_keystore
 ORG=paraspace
 IMAGE_NAME=bridge-validator
-SERVICE_NAME=bridge-dvn-verifier
+SERVICE_NAME=bridge-dvn-validator
 
-function install_dvn_verifier() {
-    echo "Installing bridge dvn verifier service at $BASE_KEYSTORE_DIR"
+function install_dvn_validator() {
+    echo "Installing bridge dvn validator service at $BASE_KEYSTORE_DIR"
     if ! command -v docker &>/dev/null; then
         sudo apt upgrade -y
         sudo apt install pkg-config curl build-essential libssl-dev libclang-dev ufw docker-compose-plugin -y
@@ -30,9 +30,9 @@ function install_dvn_verifier() {
     fi
 
     # sudo docker run hello-world
-    echo "🌀 Pulling the latest image of bridge dvn verifier ..."
+    echo "🌀 Pulling the latest image of bridge dvn validator ..."
     docker pull $ORG/$IMAGE_NAME:latest
-    echo "🐤 Parallel Bridge DVN Verifier installed successfully >#<"
+    echo "🐤 Parallel Bridge DVN Validator installed successfully >#<"
 }
 
 function create_keystore() {
@@ -53,11 +53,11 @@ function start_oracle_and_verifier() {
 }
 
 function start_service() {
-    echo "Starting bridge dvn verifier service"
+    echo "Starting bridge dvn validator service"
     echo "================================================================"
     echo "Please enter the mode of the service (default: 0)"
     echo "0. ⏩️ oracle mode (default ⛳️)"
-    echo "1. 🐤 vefivier mode (advanced)"
+    echo "1. 🐤 verifier mode (advanced)"
     echo "2. 🤖 oracle & verifier mode (advanced)"
     read -p "😆 Enter your option: " MODE
     echo "================================================================"
@@ -72,7 +72,7 @@ function start_service() {
     echo ":::::::::: 🙌 Ctrl+C 🙌 to exit the service and hang up the container"
 
     docker run --rm -it --name $SERVICE_NAME -v "$BASE_KEYSTORE_DIR:/app/keystore" --detach-keys="ctrl-c" -e "CI=true" $ORG/$IMAGE_NAME pnpm prod
-    echo "🌀 Parallel Bridge DVN Verifier service started successfully >#<"
+    echo "🌀 Parallel Bridge DVN Validator service started successfully >#<"
 }
 
 function check_service_status() {
@@ -86,43 +86,43 @@ function check_keystore_status() {
 }
 
 function stop_service() {
-    echo "Stopping bridge dvn verifier service"
+    echo "Stopping bridge dvn validator service"
     docker rm -f $SERVICE_NAME
 }
 
-function uninstall_dvn_verifier() {
-    echo "Uninstalling bridge dvn verifier service"
+function uninstall_dvn_validator() {
+    echo "Uninstalling bridge dvn validator service"
     docker stop $SERVICE_NAME
     docker rm $SERVICE_NAME
     docker rmi $ORG/$IMAGE_NAME
     echo "Cleaning up keystore at $BASE_KEYSTORE_DIR"
     rm -rf $BASE_KEYSTORE_DIR
-    echo "Parallel Bridge DVN Verifier uninstalled successfully >#<"
+    echo "Parallel Bridge DVN Validator uninstalled successfully >#<"
 }
 
 function show_menu() {
     echo "================================================================"
-    echo "🪭 Parallel Bridge DVN Verifier Installer"
-    echo "0. ⏩️ Intall parallel bridge dvn verifier (required ⛳️)"
+    echo "🪭 Parallel Bridge DVN Validator Installer"
+    echo "0. ⏩️ Intall parallel bridge dvn validator (required ⛳️)"
     echo "1. 🐤 Create Keystore (required ⛳️)"
     echo "2. 🤖 Start service (required ⛳️)"
     echo "3. 🌀 Check service status"
     echo "4. 🦄 Check keystore status"
-    echo "5. 🎯 Stop parallel bridge dvn verifier"
-    echo "6. 🎨 Uninstall parallel bridge dvn verifier"
+    echo "5. 🎯 Stop parallel bridge dvn validator"
+    echo "6. 🎨 Uninstall parallel bridge dvn validator"
     echo "7. ✅ Exit the script"
     echo "The basic workflow is 0 -> 1 -> 2"
     read -p "😆 Enter your option: " OPTION
     echo "================================================================"
 
     case $OPTION in
-    0) install_dvn_verifier ;;
+    0) install_dvn_validator ;;
     1) create_keystore ;;
     2) start_service ;;
     3) check_service_status ;;
     4) check_keystore_status ;;
     5) stop_service ;;
-    6) uninstall_dvn_verifier ;;
+    6) uninstall_dvn_validator ;;
     7) exit ;;
     *) echo "❌ Invalid option. Please try again(0-7)." ;;
     esac
@@ -130,6 +130,13 @@ function show_menu() {
 
 function main_menu() {
     clear
+    clear
+    if [ "$(id -u)" != "0" ]; then
+        echo "please run this script as root user to avoid permission issues."
+        echo "try sudo ./ParallelBridgeValidator.sh"
+        exit 1
+    fi
+
     # echo "Script path: $SCRIPT_PATH"
     echo "Keystore path: $BASE_KEYSTORE_DIR"
     echo "HOME path: $HOME"
